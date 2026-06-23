@@ -254,9 +254,174 @@
       font-size: 15px;
       margin-top: 10px;
     }
+    
+    .mobile-result-bar {
+      display: none;
+      margin-top: 14px;
+      position: sticky;
+      bottom: 8px;
+      z-index: 6;
+      background: rgba(245, 247, 251, 0.96);
+      backdrop-filter: blur(4px);
+      border: 1px solid #dbe4f0;
+      border-radius: 14px;
+      padding: 10px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    }
+    .mobile-result-bar {
+      grid-template-columns: repeat(2, minmax(120px, 1fr));
+      gap: 8px;
+    }
+    .mobile-result-item {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+    .mobile-result-name {
+      font-weight: 700;
+      color: #4b5563;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+    .mobile-result-value {
+      font-size: 18px;
+      font-weight: 800;
+      color: #1d4ed8;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
     @media (max-width: 800px) {
-      .btn-grid { grid-template-columns: repeat(3, minmax(70px, 1fr)); }
-      .result-grid { grid-template-columns: 1fr; }
+      .page {
+        margin: 12px auto;
+        padding: 10px;
+      }
+
+      .card {
+        padding: 14px;
+        border-radius: 14px;
+      }
+
+      h1 {
+        font-size: 24px;
+        margin-bottom: 10px;
+      }
+
+      .desc {
+        font-size: 15px;
+        line-height: 1.75;
+      }
+
+      .layout {
+        gap: 14px;
+      }
+
+      .left, .right {
+        min-width: 0;
+        width: 100%;
+        padding: 14px;
+      }
+
+      #exprInput {
+        font-size: 22px;
+        padding: 16px 14px;
+      }
+
+      .btn-grid {
+        grid-template-columns: repeat(3, minmax(84px, 1fr));
+        gap: 12px;
+      }
+
+      button {
+        min-height: 56px;
+        font-size: 24px;
+        padding: 14px 10px;
+        border-radius: 14px;
+      }
+
+      .ctrl-btn, .run-btn, .reset-view-btn, .page-tab {
+        font-size: 18px;
+      }
+
+      .page-tab {
+        min-height: 48px;
+        padding: 12px 16px;
+      }
+
+      .slider-row {
+        padding: 16px 14px;
+      }
+
+      .slider-title {
+        font-size: 20px;
+        margin-bottom: 12px;
+      }
+
+      input[type="range"] {
+        height: 40px;
+        accent-color: #2563eb;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        width: 28px;
+        height: 28px;
+      }
+
+      .formula-box {
+        font-size: 22px;
+        padding: 14px;
+      }
+
+      #vennCanvas {
+        max-width: 100%;
+        min-height: 360px;
+      }
+
+      #quadCanvas {
+        max-width: 100%;
+        min-height: 520px;
+        touch-action: none;
+      }
+
+      input[type="range"] {
+        touch-action: pan-y;
+      }
+
+      .right {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .result-grid {
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+        gap: 10px;
+        order: -1;
+        margin-top: 0;
+        margin-bottom: 12px;
+      }
+
+      .result-item {
+        padding: 12px 8px;
+      }
+
+      .result-name {
+        font-size: 14px;
+      }
+
+      .result-value {
+        font-size: 20px;
+        word-break: break-word;
+      }
+
+      .mobile-result-bar {
+        display: grid;
+      }
+
+      .legend {
+        font-size: 15px;
+      }
     }
   </style>
 </head>
@@ -344,6 +509,34 @@
             <button class="reset-view-btn" id="resetViewBtn" type="button">坐标系回到中心</button>
 
             <div class="quad-tip" id="quadTip"></div>
+
+            <div class="mobile-result-bar" id="mobileResultBar">
+              <div class="mobile-result-item">
+                <div class="mobile-result-name" id="mobileResult1Name">x1</div>
+                <div class="mobile-result-value" id="mobileX1Text">0</div>
+              </div>
+              <div class="mobile-result-item">
+                <div class="mobile-result-name" id="mobileResult2Name">x2</div>
+                <div class="mobile-result-value" id="mobileX2Text">0</div>
+              </div>
+              <div class="mobile-result-item">
+                <div class="mobile-result-name" id="mobileResult3Name">x1 + x2</div>
+                <div class="mobile-result-value" id="mobileSumText">0</div>
+              </div>
+              <div class="mobile-result-item">
+                <div class="mobile-result-name" id="mobileResult4Name">x1 × x2</div>
+                <div class="mobile-result-value" id="mobileProductText">0</div>
+              </div>
+              <div class="mobile-result-item mobile-vertex-extra" id="mobileVertexBBox" style="display: none;">
+                <div class="mobile-result-name">b</div>
+                <div class="mobile-result-value" id="mobileVertexBText">0</div>
+              </div>
+              <div class="mobile-result-item mobile-vertex-extra" id="mobileVertexCBox" style="display: none;">
+                <div class="mobile-result-name">c</div>
+                <div class="mobile-result-value" id="mobileVertexCText">0</div>
+              </div>
+            </div>
+
           </div>
 
           <div class="right">
@@ -828,6 +1021,21 @@
     const vertexBText = document.getElementById("vertexBText");
     const vertexCText = document.getElementById("vertexCText");
 
+    const mobileResult1Name = document.getElementById("mobileResult1Name");
+    const mobileResult2Name = document.getElementById("mobileResult2Name");
+    const mobileResult3Name = document.getElementById("mobileResult3Name");
+    const mobileResult4Name = document.getElementById("mobileResult4Name");
+
+    const mobileX1Text = document.getElementById("mobileX1Text");
+    const mobileX2Text = document.getElementById("mobileX2Text");
+    const mobileSumText = document.getElementById("mobileSumText");
+    const mobileProductText = document.getElementById("mobileProductText");
+
+    const mobileVertexBBox = document.getElementById("mobileVertexBBox");
+    const mobileVertexCBox = document.getElementById("mobileVertexCBox");
+    const mobileVertexBText = document.getElementById("mobileVertexBText");
+    const mobileVertexCText = document.getElementById("mobileVertexCText");
+
     const quadCanvas = document.getElementById("quadCanvas");
     const qctx = quadCanvas.getContext("2d");
 
@@ -1052,8 +1260,14 @@
         result2Name.textContent = "x2";
         result3Name.textContent = "x1 + x2";
         result4Name.textContent = "x1 × x2";
+        mobileResult1Name.textContent = "x1";
+        mobileResult2Name.textContent = "x2";
+        mobileResult3Name.textContent = "x1 + x2";
+        mobileResult4Name.textContent = "x1 × x2";
         vertexBBox.style.display = "none";
         vertexCBox.style.display = "none";
+        mobileVertexBBox.style.display = "none";
+        mobileVertexCBox.style.display = "none";
 
         quadTitle.textContent = "二次函数图像";
         quadDesc.innerHTML = `拖动画布可以查看不同位置的平面直角坐标系。左侧滑块控制二次函数 <b>y = ax² + bx + c</b> 的三个系数。`;
@@ -1078,8 +1292,14 @@
         result2Name.textContent = "x2";
         result3Name.textContent = "x1 + x2";
         result4Name.textContent = "x1 × x2";
+        mobileResult1Name.textContent = "x1";
+        mobileResult2Name.textContent = "x2";
+        mobileResult3Name.textContent = "x1 + x2";
+        mobileResult4Name.textContent = "x1 × x2";
         vertexBBox.style.display = "";
         vertexCBox.style.display = "";
+        mobileVertexBBox.style.display = "";
+        mobileVertexCBox.style.display = "";
 
         quadTitle.textContent = "二次函数顶点式图像";
         quadDesc.innerHTML = `拖动画布可以查看不同位置的平面直角坐标系。左侧滑块控制顶点式 <b>y = a(x - h)² + k</b> 的三个参数。`;
@@ -1106,8 +1326,14 @@
         result2Name.textContent = "c";
         result3Name.textContent = "x1 + x2";
         result4Name.textContent = "x1 × x2";
+        mobileResult1Name.textContent = "b";
+        mobileResult2Name.textContent = "c";
+        mobileResult3Name.textContent = "x1 + x2";
+        mobileResult4Name.textContent = "x1 × x2";
         vertexBBox.style.display = "none";
         vertexCBox.style.display = "none";
+        mobileVertexBBox.style.display = "none";
+        mobileVertexCBox.style.display = "none";
 
         quadTitle.textContent = "二次函数交点式图像";
         quadDesc.innerHTML = `拖动画布可以查看不同位置的平面直角坐标系。左侧滑块控制交点式 <b>y = a(x−x1)(x−x2)</b> 的三个参数。`;
@@ -1160,9 +1386,13 @@
 
     function setNoRealRoots() {
       x1Text.textContent = "无实数交点";
+      mobileX1Text.textContent = "无实数交点";
       x2Text.textContent = "无实数交点";
+      mobileX2Text.textContent = "无实数交点";
       sumText.textContent = "无实数值";
+      mobileSumText.textContent = "无实数值";
       productText.textContent = "无实数值";
+      mobileProductText.textContent = "无实数值";
     }
 
     function updateRoots() {
@@ -1170,9 +1400,13 @@
 
       if (Math.abs(v.a) < 0.0000001) {
         x1Text.textContent = "a不能为0";
+        mobileX1Text.textContent = "a不能为0";
         x2Text.textContent = "a不能为0";
+        mobileX2Text.textContent = "a不能为0";
         sumText.textContent = "不存在";
+        mobileSumText.textContent = "不存在";
         productText.textContent = "不存在";
+        mobileProductText.textContent = "不存在";
         return;
       }
 
@@ -1198,6 +1432,10 @@
         x2Text.textContent = formatNumber(x2);
         sumText.textContent = formatNumber(x1 + x2);
         productText.textContent = formatNumber(x1 * x2);
+        mobileX1Text.textContent = formatNumber(x1);
+        mobileX2Text.textContent = formatNumber(x2);
+        mobileSumText.textContent = formatNumber(x1 + x2);
+        mobileProductText.textContent = formatNumber(x1 * x2);
 
         drawRootPoint(x1);
         drawRootPoint(x2);
@@ -1224,6 +1462,10 @@
         x2Text.textContent = formatNumber(x2);
         sumText.textContent = formatNumber(x1 + x2);
         productText.textContent = formatNumber(x1 * x2);
+        mobileX1Text.textContent = formatNumber(x1);
+        mobileX2Text.textContent = formatNumber(x2);
+        mobileSumText.textContent = formatNumber(x1 + x2);
+        mobileProductText.textContent = formatNumber(x1 * x2);
 
         drawRootPoint(x1);
         drawRootPoint(x2);
@@ -1239,6 +1481,10 @@
       x2Text.textContent = formatNumber(c);
       sumText.textContent = formatNumber(x1 + x2);
       productText.textContent = formatNumber(x1 * x2);
+      mobileX1Text.textContent = formatNumber(b);
+      mobileX2Text.textContent = formatNumber(c);
+      mobileSumText.textContent = formatNumber(x1 + x2);
+      mobileProductText.textContent = formatNumber(x1 * x2);
 
       drawRootPoint(x1);
       drawRootPoint(x2);
@@ -1263,6 +1509,8 @@
         const vertexC = v.a * v.h * v.h + v.k;
         vertexBText.textContent = formatNumber(vertexB);
         vertexCText.textContent = formatNumber(vertexC);
+        mobileVertexBText.textContent = formatNumber(vertexB);
+        mobileVertexCText.textContent = formatNumber(vertexC);
       } else {
         slider2Value.textContent = formatCoeff(v.x1);
         slider3Value.textContent = formatCoeff(v.x2);
@@ -1273,9 +1521,13 @@
 
       if (Math.abs(v.a) < 0.0000001) {
         x1Text.textContent = "a不能为0";
+        mobileX1Text.textContent = "a不能为0";
         x2Text.textContent = "a不能为0";
+        mobileX2Text.textContent = "a不能为0";
         sumText.textContent = "不存在";
+        mobileSumText.textContent = "不存在";
         productText.textContent = "不存在";
+        mobileProductText.textContent = "不存在";
         return;
       }
 
