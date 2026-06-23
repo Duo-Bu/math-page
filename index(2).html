@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>数学可视化工具</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      background: #f5f7fb;
+      color: #1f2937;
+    }
+    .top-switch {
+      width: 100%;
+      background: #111827;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      flex-wrap: wrap;
+    }
+    .page-tab {
+      border: 1px solid #374151;
+      background: #1f2937;
+      color: #e5e7eb;
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 17px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .page-tab.active {
+      background: #2563eb;
+      border-color: #60a5fa;
+      color: white;
+    }
+    .page {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 20px;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+      padding: 24px;
+    }
+    h1 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 28px;
+    }
+    .desc {
+      color: #4b5563;
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+    .layout {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    .left, .right {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 18px;
+    }
+    .left {
+      flex: 1 1 420px;
+      min-width: 320px;
+    }
+    .right {
+      flex: 1 1 560px;
+      min-width: 320px;
+      text-align: center;
+    }
+    .label {
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: block;
+    }
+    #exprInput {
+      width: 100%;
+      font-size: 24px;
+      padding: 14px 16px;
+      border: 2px solid #cbd5e1;
+      border-radius: 12px;
+      outline: none;
+      background: #fff;
+    }
+    #exprInput:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+    }
+    .btn-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(70px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+      margin-top: 14px;
+    }
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 10px;
+      font-size: 22px;
+      cursor: pointer;
+      background: #e5eefc;
+      color: #1d4ed8;
+      font-weight: 700;
+      transition: 0.18s;
+    }
+    button:hover {
+      transform: translateY(-1px);
+      background: #dbeafe;
+    }
+    .op-btn { background: #ede9fe; color: #6d28d9; }
+    .ctrl-btn { background: #fee2e2; color: #b91c1c; font-size: 18px; }
+    .run-btn { background: #dcfce7; color: #166534; font-size: 18px; }
+    .reset-view-btn {
+      background: #e0f2fe;
+      color: #0369a1;
+      font-size: 18px;
+      width: 100%;
+      margin-top: 8px;
+    }
+    .comp-symbol {
+      display: inline-block;
+      font-size: 28px;
+      line-height: 1;
+    }
+    .comp-symbol sub {
+      font-size: 13px;
+      vertical-align: -0.35em;
+      margin-left: 1px;
+    }
+    .info-box, .legend, .slider-row, .result-item {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+    }
+    .info-box {
+      padding: 14px;
+      line-height: 1.7;
+      margin-bottom: 12px;
+      color: #374151;
+    }
+    #status {
+      min-height: 28px;
+      font-weight: 700;
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
+    }
+    .ok {
+      background: #ecfdf5;
+      color: #166534;
+      border: 1px solid #a7f3d0;
+    }
+    .error {
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+    canvas {
+      width: 100%;
+      height: auto;
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid #d1d5db;
+    }
+    #vennCanvas { max-width: 560px; }
+    #quadCanvas {
+      max-width: 700px;
+      cursor: grab;
+    }
+    #quadCanvas:active { cursor: grabbing; }
+    .examples {
+      margin-top: 10px;
+      font-size: 15px;
+      color: #4b5563;
+      line-height: 1.8;
+    }
+    .legend {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #4b5563;
+      line-height: 1.8;
+      text-align: left;
+      padding: 12px;
+    }
+    .expr-show {
+      margin-top: 12px;
+      font-size: 22px;
+      font-weight: 700;
+      color: #111827;
+      word-break: break-all;
+    }
+    .small { font-size: 14px; color: #6b7280; }
+    .hidden { display: none; }
+    .slider-row {
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .slider-title {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+    input[type="range"] { width: 100%; }
+    .formula-box {
+      background: #111827;
+      color: white;
+      padding: 16px;
+      border-radius: 14px;
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 16px;
+      word-break: break-all;
+    }
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(160px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .result-item {
+      padding: 14px;
+      text-align: center;
+    }
+    .result-name {
+      font-weight: 700;
+      color: #4b5563;
+      margin-bottom: 6px;
+    }
+    .result-value {
+      font-size: 22px;
+      font-weight: 800;
+      color: #1d4ed8;
+    }
+    .quad-tip {
+      color: #4b5563;
+      line-height: 1.7;
+      font-size: 15px;
+      margin-top: 10px;
+    }
+    @media (max-width: 800px) {
+      .btn-grid { grid-template-columns: repeat(3, minmax(70px, 1fr)); }
+      .result-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="top-switch">
+    <button class="page-tab active" data-page="set2" type="button">第 1 页：A、B</button>
+    <button class="page-tab" data-page="set3" type="button">第 2 页：A、B、C</button>
+    <button class="page-tab" data-page="standard" type="button">第 3 页：y = ax² + bx + c</button>
+    <button class="page-tab" data-page="vertex" type="button">第 4 页：y = a(x-h)²+k</button>
+    <button class="page-tab" data-page="factored" type="button">第 5 页：y = a(x−x1)(x−x2)</button>
+  </div>
+
+  <div class="page">
+    <div class="card">
+
+      <section id="setSection">
+        <h1 id="setTitle">两个集合的表达式可视化</h1>
+        <div class="desc" id="setDesc"></div>
+
+        <div class="layout">
+          <div class="left">
+            <label class="label" for="exprInput">集合表达式</label>
+            <input id="exprInput" type="text" placeholder="例如：∁ᵤ(A∪B) 或 A∩∁ᵤB" />
+
+            <div class="btn-grid">
+              <button data-insert="A">A</button>
+              <button data-insert="B">B</button>
+              <button data-insert="C" id="cBtn">C</button>
+              <button data-insert="U">U</button>
+              <button data-insert="(">(</button>
+              <button data-insert=")">)</button>
+              <button class="op-btn" data-insert="∪">∪</button>
+              <button class="op-btn" data-insert="∩">∩</button>
+              <button class="op-btn" data-insert="∁ᵤ"><span class="comp-symbol">∁<sub>U</sub></span></button>
+              <button class="ctrl-btn" id="backBtn" type="button">退格</button>
+              <button class="ctrl-btn" id="clearBtn" type="button">清空</button>
+              <button class="run-btn" id="drawBtn" type="button">显示结果</button>
+            </div>
+
+            <div class="info-box" id="infoBox"></div>
+            <div class="examples" id="examplesBox"></div>
+            <div class="expr-show">当前表达式：<span id="exprShow">（空）</span></div>
+            <div id="status" class="small"></div>
+          </div>
+
+          <div class="right">
+            <canvas id="vennCanvas" width="560" height="430"></canvas>
+            <div class="legend" id="legendBox"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="quadSection" class="hidden">
+        <h1 id="quadTitle">二次函数图像</h1>
+        <div class="desc" id="quadDesc"></div>
+
+        <div class="layout">
+          <div class="left">
+            <div class="formula-box" id="formulaText">y = x²</div>
+
+            <div class="slider-row">
+              <div class="slider-title">
+                <span id="slider1Name">a</span>
+                <span id="slider1Value">1</span>
+              </div>
+              <input id="slider1" type="range" min="-5" max="5" step="0.1" value="1">
+            </div>
+
+            <div class="slider-row">
+              <div class="slider-title">
+                <span id="slider2Name">b</span>
+                <span id="slider2Value">0</span>
+              </div>
+              <input id="slider2" type="range" min="-10" max="10" step="0.1" value="0">
+            </div>
+
+            <div class="slider-row">
+              <div class="slider-title">
+                <span id="slider3Name">c</span>
+                <span id="slider3Value">0</span>
+              </div>
+              <input id="slider3" type="range" min="-10" max="10" step="0.1" value="0">
+            </div>
+
+            <button class="reset-view-btn" id="resetViewBtn" type="button">坐标系回到中心</button>
+
+            <div class="quad-tip" id="quadTip"></div>
+          </div>
+
+          <div class="right">
+            <canvas id="quadCanvas" width="700" height="500"></canvas>
+
+            <div class="result-grid">
+              <div class="result-item">
+                <div class="result-name" id="result1Name">x1</div>
+                <div class="result-value" id="x1Text">0</div>
+              </div>
+              <div class="result-item">
+                <div class="result-name" id="result2Name">x2</div>
+                <div class="result-value" id="x2Text">0</div>
+              </div>
+              <div class="result-item">
+                <div class="result-name" id="result3Name">x1 + x2</div>
+                <div class="result-value" id="sumText">0</div>
+              </div>
+              <div class="result-item">
+                <div class="result-name" id="result4Name">x1 × x2</div>
+                <div class="result-value" id="productText">0</div>
+              </div>
+
+              <div class="result-item" id="vertexBBox" style="display: none;">
+                <div class="result-name">b</div>
+                <div class="result-value" id="vertexBText">0</div>
+              </div>
+
+              <div class="result-item" id="vertexCBox" style="display: none;">
+                <div class="result-name">c</div>
+                <div class="result-value" id="vertexCText">0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script>
+    const setSection = document.getElementById("setSection");
+    const quadSection = document.getElementById("quadSection");
+    const tabs = document.querySelectorAll(".page-tab");
+
+    let currentPage = "set2";
+    let currentSetMode = "set2";
+    let currentQuadMode = "standard";
+
+    const savedExpr = { set2: "", set3: "" };
+
+    const setTitle = document.getElementById("setTitle");
+    const setDesc = document.getElementById("setDesc");
+    const input = document.getElementById("exprInput");
+    const statusBox = document.getElementById("status");
+    const exprShow = document.getElementById("exprShow");
+    const cBtn = document.getElementById("cBtn");
+    const infoBox = document.getElementById("infoBox");
+    const examplesBox = document.getElementById("examplesBox");
+    const legendBox = document.getElementById("legendBox");
+
+    const vennCanvas = document.getElementById("vennCanvas");
+    const vctx = vennCanvas.getContext("2d");
+
+    const setModes = {
+      set2: {
+        title: "两个集合的表达式可视化",
+        variables: ["A", "B"],
+        placeholder: "例如：∁ᵤ(A∪B) 或 A∩∁ᵤB",
+        circles: {
+          U: { x: 280, y: 220, r: 170, color: "#111827" },
+          A: { x: 220, y: 220, r: 95, color: "#2563eb" },
+          B: { x: 340, y: 220, r: 95, color: "#dc2626" }
+        },
+        examples: ["A∪B", "A∩B", "∁ᵤA", "∁ᵤB", "∁ᵤ(A∪B)", "A∩∁ᵤB", "(A∩B)∪∁ᵤB"]
+      },
+      set3: {
+        title: "三个集合的表达式可视化",
+        variables: ["A", "B", "C"],
+        placeholder: "例如：A∩C 或 ∁ᵤ(A∪B∪C)",
+        circles: {
+          U: { x: 280, y: 220, r: 170, color: "#111827" },
+          A: { x: 215, y: 205, r: 92, color: "#2563eb" },
+          B: { x: 345, y: 205, r: 92, color: "#dc2626" },
+          C: { x: 280, y: 295, r: 92, color: "#16a34a" }
+        },
+        examples: ["A∪B∪C", "A∩B∩C", "A∩C", "B∩C", "∁ᵤC", "A∩∁ᵤC", "∁ᵤ(A∪B∪C)"]
+      }
+    };
+
+    function getSetMode() {
+      return setModes[currentSetMode];
+    }
+
+    function setStatus(message, isError = false) {
+      statusBox.textContent = message;
+      statusBox.className = isError ? "error" : "ok";
+    }
+
+    function updateExprShow() {
+      exprShow.textContent = input.value.trim() || "（空）";
+    }
+
+    function insertAtCursor(text) {
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      const value = input.value;
+      input.value = value.slice(0, start) + text + value.slice(end);
+      input.focus();
+      const newPos = start + text.length;
+      input.setSelectionRange(newPos, newPos);
+      savedExpr[currentSetMode] = input.value;
+      updateExprShow();
+      tryRenderSet();
+    }
+
+    document.querySelectorAll("button[data-insert]").forEach(btn => {
+      btn.addEventListener("click", () => insertAtCursor(btn.dataset.insert));
+    });
+
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      input.value = "";
+      savedExpr[currentSetMode] = "";
+      updateExprShow();
+      setStatus("已清空表达式。", false);
+      drawVenn(null);
+      input.focus();
+    });
+
+    document.getElementById("backBtn").addEventListener("click", () => {
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      const value = input.value;
+
+      if (start !== end) {
+        input.value = value.slice(0, start) + value.slice(end);
+        input.setSelectionRange(start, start);
+      } else if (start > 0) {
+        const before = value.slice(0, start);
+        const after = value.slice(end);
+        if (before.endsWith("∁ᵤ")) {
+          input.value = value.slice(0, start - 2) + after;
+          input.setSelectionRange(start - 2, start - 2);
+        } else {
+          input.value = value.slice(0, start - 1) + after;
+          input.setSelectionRange(start - 1, start - 1);
+        }
+      }
+
+      savedExpr[currentSetMode] = input.value;
+      input.focus();
+      updateExprShow();
+      tryRenderSet();
+    });
+
+    document.getElementById("drawBtn").addEventListener("click", tryRenderSet);
+
+    input.addEventListener("input", () => {
+      savedExpr[currentSetMode] = input.value;
+      updateExprShow();
+      tryRenderSet();
+    });
+
+    function normalizeExpression(expr) {
+      return expr
+        .replace(/\s+/g, "")
+        .replace(/a/g, "A")
+        .replace(/b/g, "B")
+        .replace(/c/g, "C")
+        .replace(/u/g, "U")
+        .replace(/∁U/g, "∁ᵤ")
+        .replace(/∁ᵁ/g, "∁ᵤ")
+        .replace(/∁u/g, "∁ᵤ")
+        .replace(/∁₍U₎/g, "∁ᵤ");
+    }
+
+    function tokenize(expr) {
+      const s = normalizeExpression(expr);
+      if (!s) throw new Error("请输入集合表达式。");
+
+      const tokens = [];
+      let i = 0;
+
+      while (i < s.length) {
+        const ch = s[i];
+
+        if (ch === "∁") {
+          if (s[i + 1] === "ᵤ" || s[i + 1] === "U") {
+            tokens.push("COMP");
+            i += 2;
+          } else {
+            throw new Error("补集符号应写成 ∁ᵤ。");
+          }
+          continue;
+        }
+
+        if ("ABCU()∪∩".includes(ch)) {
+          tokens.push(ch);
+          i++;
+          continue;
+        }
+
+        throw new Error("出现非法字符：'" + ch + "'");
+      }
+
+      return tokens;
+    }
+
+    function parse(tokens) {
+      let pos = 0;
+
+      function peek() { return tokens[pos]; }
+      function consume(expected) {
+        if (tokens[pos] === expected) {
+          pos++;
+          return true;
+        }
+        return false;
+      }
+
+      function parseExpression() { return parseUnion(); }
+
+      function parseUnion() {
+        let node = parseIntersection();
+        while (peek() === "∪") {
+          consume("∪");
+          node = { type: "union", left: node, right: parseIntersection() };
+        }
+        return node;
+      }
+
+      function parseIntersection() {
+        let node = parsePrefix();
+        while (peek() === "∩") {
+          consume("∩");
+          node = { type: "inter", left: node, right: parsePrefix() };
+        }
+        return node;
+      }
+
+      function parsePrefix() {
+        if (consume("COMP")) {
+          return { type: "comp", value: parsePrefix() };
+        }
+        return parsePrimary();
+      }
+
+      function parsePrimary() {
+        const t = peek();
+
+        if (t === "A" || t === "B" || t === "C" || t === "U") {
+          pos++;
+          return { type: "set", name: t };
+        }
+
+        if (consume("(")) {
+          const node = parseExpression();
+          if (!consume(")")) throw new Error("缺少右括号 )");
+          return node;
+        }
+
+        if (t === undefined) throw new Error("表达式不完整。");
+        throw new Error("位置 " + (pos + 1) + " 附近有语法错误。");
+      }
+
+      const ast = parseExpression();
+      if (pos !== tokens.length) {
+        throw new Error("位置 " + (pos + 1) + " 后面的内容无法解析。");
+      }
+      return ast;
+    }
+
+    function getAllMask() {
+      const n = getSetMode().variables.length;
+      const regionCount = 1 << n;
+      return (1 << regionCount) - 1;
+    }
+
+    function evaluateSet(node) {
+      const mode = getSetMode();
+      const variables = mode.variables;
+      const allMask = getAllMask();
+      const regionCount = 1 << variables.length;
+
+      switch (node.type) {
+        case "set": {
+          if (node.name === "U") return allMask;
+
+          const index = variables.indexOf(node.name);
+          if (index === -1) throw new Error("当前页面不能使用集合 " + node.name + "。");
+
+          let mask = 0;
+          for (let combo = 0; combo < regionCount; combo++) {
+            if (combo & (1 << index)) mask |= (1 << combo);
+          }
+          return mask;
+        }
+        case "union":
+          return evaluateSet(node.left) | evaluateSet(node.right);
+        case "inter":
+          return evaluateSet(node.left) & evaluateSet(node.right);
+        case "comp":
+          return allMask ^ evaluateSet(node.value);
+        default:
+          throw new Error("未知表达式。");
+      }
+    }
+
+    function pointInCircle(x, y, circle) {
+      const dx = x - circle.x;
+      const dy = y - circle.y;
+      return dx * dx + dy * dy <= circle.r * circle.r;
+    }
+
+    function drawCircle(circle, width = 3) {
+      vctx.beginPath();
+      vctx.arc(circle.x, circle.y, circle.r, 0, Math.PI * 2);
+      vctx.strokeStyle = circle.color;
+      vctx.lineWidth = width;
+      vctx.stroke();
+    }
+
+    function drawLabel(text, x, y, color) {
+      vctx.fillStyle = color;
+      vctx.font = "bold 28px Microsoft YaHei, Arial";
+      vctx.fillText(text, x, y);
+    }
+
+    function drawVenn(mask) {
+      const mode = getSetMode();
+      const circles = mode.circles;
+      const variables = mode.variables;
+
+      vctx.clearRect(0, 0, vennCanvas.width, vennCanvas.height);
+      vctx.fillStyle = "#ffffff";
+      vctx.fillRect(0, 0, vennCanvas.width, vennCanvas.height);
+
+      vctx.save();
+      vctx.beginPath();
+      vctx.arc(circles.U.x, circles.U.y, circles.U.r, 0, Math.PI * 2);
+      vctx.clip();
+      vctx.fillStyle = "#f8fafc";
+      vctx.fillRect(0, 0, vennCanvas.width, vennCanvas.height);
+      vctx.restore();
+
+      if (typeof mask === "number") {
+        const image = vctx.createImageData(vennCanvas.width, vennCanvas.height);
+        const data = image.data;
+
+        for (let y = 0; y < vennCanvas.height; y++) {
+          for (let x = 0; x < vennCanvas.width; x++) {
+            if (!pointInCircle(x, y, circles.U)) continue;
+
+            let combo = 0;
+            for (let i = 0; i < variables.length; i++) {
+              const name = variables[i];
+              if (pointInCircle(x, y, circles[name])) combo |= (1 << i);
+            }
+
+            if (mask & (1 << combo)) {
+              const idx = (y * vennCanvas.width + x) * 4;
+              data[idx] = 59;
+              data[idx + 1] = 130;
+              data[idx + 2] = 246;
+              data[idx + 3] = 115;
+            }
+          }
+        }
+        vctx.putImageData(image, 0, 0);
+      }
+
+      drawCircle(circles.U, 3.5);
+      drawCircle(circles.A, 3);
+      drawCircle(circles.B, 3);
+      if (variables.includes("C")) drawCircle(circles.C, 3);
+
+      vctx.fillStyle = "#111827";
+      vctx.font = "bold 30px Microsoft YaHei, Arial";
+      vctx.fillText("U", circles.U.x - 8, 60);
+
+      if (currentSetMode === "set2") {
+        drawLabel("A", circles.A.x - 42, circles.A.y - 102, circles.A.color);
+        drawLabel("B", circles.B.x + 22, circles.B.y - 102, circles.B.color);
+      } else {
+        drawLabel("A", circles.A.x - 50, circles.A.y - 95, circles.A.color);
+        drawLabel("B", circles.B.x + 30, circles.B.y - 95, circles.B.color);
+        drawLabel("C", circles.C.x - 8, circles.C.y + 118, circles.C.color);
+      }
+    }
+
+    function tryRenderSet() {
+      updateExprShow();
+      const raw = input.value.trim();
+
+      if (!raw) {
+        drawVenn(null);
+        setStatus("请输入集合表达式。", true);
+        return;
+      }
+
+      try {
+        const ast = parse(tokenize(raw));
+        const mask = evaluateSet(ast);
+        drawVenn(mask);
+
+        if (mask === 0) {
+          setStatus("表达式合法：该表达式表示空集，图中没有高亮区域。", false);
+        } else {
+          setStatus("表达式合法：蓝色区域就是该表达式表示的集合。", false);
+        }
+      } catch (err) {
+        drawVenn(null);
+        setStatus("错误：" + err.message, true);
+      }
+    }
+
+    function updateSetText() {
+      const mode = getSetMode();
+      setTitle.textContent = mode.title;
+      input.placeholder = mode.placeholder;
+      cBtn.style.display = currentSetMode === "set3" ? "" : "none";
+
+      const hasC = currentSetMode === "set3";
+
+      setDesc.innerHTML = `
+        在输入框中输入集合表达式，或者点击下方按钮拼接表达式。<br>
+        支持的符号：<b>A</b>、<b>B</b>${hasC ? "、<b>C</b>" : ""}、<b>U</b>、<b>( )</b>、<b>∪</b>（并集）、<b>∩</b>（交集）、<b>∁<sub>U</sub></b>（相对于全集 U 的补集）。<br>
+        右侧会把表达式对应的集合区域用蓝色高亮显示；若表达式不合法，将显示错误。
+      `;
+
+      infoBox.innerHTML = `
+        <b>说明：</b><br>
+        1. <b>U</b> 表示全集。<br>
+        2. <b>∪</b> 表示并集。<br>
+        3. <b>∩</b> 表示交集。<br>
+        4. <b>∁<sub>U</sub></b> 表示相对于全集 U 的补集。<br>
+        5. 例如 <b>∁<sub>U</sub>A</b> 表示 A 在全集 U 中的补集。<br>
+        6. 运算优先级：<b>∁<sub>U</sub></b> 高于 <b>∩</b>，<b>∩</b> 高于 <b>∪</b>。<br>
+        7. 可以用括号改变顺序，例如 <b>∁<sub>U</sub>(A∪B)</b>。
+      `;
+
+      examplesBox.innerHTML = `<b>可尝试示例：</b><br>${mode.examples.join("<br>")}`;
+
+      legendBox.innerHTML = `
+        <b>图示说明：</b><br>
+        蓝色区域：当前表达式表示的集合<br>
+        黑色大圆：全集 U<br>
+        蓝色圆：集合 A<br>
+        红色圆：集合 B${hasC ? "<br>绿色圆：集合 C" : ""}
+      `;
+    }
+
+    const quadTitle = document.getElementById("quadTitle");
+    const quadDesc = document.getElementById("quadDesc");
+    const formulaText = document.getElementById("formulaText");
+    const quadTip = document.getElementById("quadTip");
+
+    const slider1 = document.getElementById("slider1");
+    const slider2 = document.getElementById("slider2");
+    const slider3 = document.getElementById("slider3");
+
+    const slider1Name = document.getElementById("slider1Name");
+    const slider2Name = document.getElementById("slider2Name");
+    const slider3Name = document.getElementById("slider3Name");
+
+    const slider1Value = document.getElementById("slider1Value");
+    const slider2Value = document.getElementById("slider2Value");
+    const slider3Value = document.getElementById("slider3Value");
+
+    const x1Text = document.getElementById("x1Text");
+    const x2Text = document.getElementById("x2Text");
+    const sumText = document.getElementById("sumText");
+    const productText = document.getElementById("productText");
+
+    const result1Name = document.getElementById("result1Name");
+    const result2Name = document.getElementById("result2Name");
+    const result3Name = document.getElementById("result3Name");
+    const result4Name = document.getElementById("result4Name");
+
+    const vertexBBox = document.getElementById("vertexBBox");
+    const vertexCBox = document.getElementById("vertexCBox");
+    const vertexBText = document.getElementById("vertexBText");
+    const vertexCText = document.getElementById("vertexCText");
+
+    const quadCanvas = document.getElementById("quadCanvas");
+    const qctx = quadCanvas.getContext("2d");
+
+    let scale = 40;
+    let offsetX = 0;
+    let offsetY = 0;
+    let dragging = false;
+    let lastMouseX = 0;
+    let lastMouseY = 0;
+
+    const quadStates = {
+      standard: { a: 1, b: 0, c: 0 },
+      vertex: { a: 1, h: 0, k: 0 },
+      factored: { a: 1, x1: -1, x2: 1 }
+    };
+
+    function formatNumber(n) {
+      if (!Number.isFinite(n)) return "不存在";
+      if (Math.abs(n) < 0.0000001) n = 0;
+      return Number(n.toFixed(4)).toString();
+    }
+
+    function formatCoeff(n) {
+      if (Math.abs(n) < 0.0000001) n = 0;
+      return Number(n.toFixed(2)).toString();
+    }
+
+    function coefficientText(n, variable, first = false) {
+      if (n === 0) return "";
+      const sign = n > 0 ? (first ? "" : " + ") : (first ? "-" : " - ");
+      const abs = Math.abs(n);
+      const body = abs === 1 ? variable : formatCoeff(abs) + variable;
+      return sign + body;
+    }
+
+    function makeStandardFormula(a, b, c) {
+      let text = "y = ";
+      text += coefficientText(a, "x²", true) || "0";
+      text += coefficientText(b, "x");
+      if (c > 0) text += " + " + formatCoeff(c);
+      if (c < 0) text += " - " + formatCoeff(Math.abs(c));
+      return text;
+    }
+
+    function makeVertexFormula(a, h, k) {
+      let text = "y = ";
+      if (a === 1) text += "";
+      else if (a === -1) text += "-";
+      else text += formatCoeff(a);
+
+      if (h === 0) {
+        text += "x²";
+      } else if (h > 0) {
+        text += "(x - " + formatCoeff(h) + ")²";
+      } else {
+        text += "(x + " + formatCoeff(Math.abs(h)) + ")²";
+      }
+
+      if (k > 0) text += " + " + formatCoeff(k);
+      if (k < 0) text += " - " + formatCoeff(Math.abs(k));
+      return text;
+    }
+
+    function makeFactoredFormula(a, x1, x2) {
+      let text = "y = ";
+
+      if (a === 1) text += "";
+      else if (a === -1) text += "-";
+      else text += formatCoeff(a);
+
+      if (x1 === 0) {
+        text += "x";
+      } else if (x1 > 0) {
+        text += "(x − " + formatCoeff(x1) + ")";
+      } else {
+        text += "(x + " + formatCoeff(Math.abs(x1)) + ")";
+      }
+
+      if (x2 === 0) {
+        text += "x";
+      } else if (x2 > 0) {
+        text += "(x − " + formatCoeff(x2) + ")";
+      } else {
+        text += "(x + " + formatCoeff(Math.abs(x2)) + ")";
+      }
+
+      return text;
+    }
+
+    function worldToScreenX(x) {
+      return quadCanvas.width / 2 + offsetX + x * scale;
+    }
+
+    function worldToScreenY(y) {
+      return quadCanvas.height / 2 + offsetY - y * scale;
+    }
+
+    function screenToWorldX(x) {
+      return (x - quadCanvas.width / 2 - offsetX) / scale;
+    }
+
+    function screenToWorldY(y) {
+      return -(y - quadCanvas.height / 2 - offsetY) / scale;
+    }
+
+    function drawGrid() {
+      qctx.clearRect(0, 0, quadCanvas.width, quadCanvas.height);
+      qctx.fillStyle = "#ffffff";
+      qctx.fillRect(0, 0, quadCanvas.width, quadCanvas.height);
+
+      const left = screenToWorldX(0);
+      const right = screenToWorldX(quadCanvas.width);
+      const top = screenToWorldY(0);
+      const bottom = screenToWorldY(quadCanvas.height);
+
+      let step = 1;
+      if (scale < 20) step = 2;
+      if (scale < 12) step = 5;
+      if (scale > 80) step = 0.5;
+
+      qctx.lineWidth = 1;
+      qctx.strokeStyle = "#e5e7eb";
+      qctx.font = "12px Microsoft YaHei, Arial";
+      qctx.fillStyle = "#6b7280";
+
+      for (let x = Math.floor(left / step) * step; x <= right; x += step) {
+        const sx = worldToScreenX(x);
+        qctx.beginPath();
+        qctx.moveTo(sx, 0);
+        qctx.lineTo(sx, quadCanvas.height);
+        qctx.stroke();
+
+        if (Math.abs(x) > 0.000001) {
+          qctx.fillText(formatNumber(x), sx + 3, worldToScreenY(0) + 14);
+        }
+      }
+
+      for (let y = Math.floor(bottom / step) * step; y <= top; y += step) {
+        const sy = worldToScreenY(y);
+        qctx.beginPath();
+        qctx.moveTo(0, sy);
+        qctx.lineTo(quadCanvas.width, sy);
+        qctx.stroke();
+
+        if (Math.abs(y) > 0.000001) {
+          qctx.fillText(formatNumber(y), worldToScreenX(0) + 4, sy - 4);
+        }
+      }
+
+      qctx.strokeStyle = "#111827";
+      qctx.lineWidth = 2;
+
+      const xAxisY = worldToScreenY(0);
+      qctx.beginPath();
+      qctx.moveTo(0, xAxisY);
+      qctx.lineTo(quadCanvas.width, xAxisY);
+      qctx.stroke();
+
+      const yAxisX = worldToScreenX(0);
+      qctx.beginPath();
+      qctx.moveTo(yAxisX, 0);
+      qctx.lineTo(yAxisX, quadCanvas.height);
+      qctx.stroke();
+
+      qctx.fillStyle = "#111827";
+      qctx.font = "bold 16px Microsoft YaHei, Arial";
+      qctx.fillText("x", quadCanvas.width - 20, xAxisY - 8);
+      qctx.fillText("y", yAxisX + 8, 20);
+      qctx.fillText("0", yAxisX + 5, xAxisY + 16);
+    }
+
+    function getQuadValues() {
+      if (currentQuadMode === "standard") {
+        return {
+          a: Number(slider1.value),
+          b: Number(slider2.value),
+          c: Number(slider3.value)
+        };
+      }
+
+      if (currentQuadMode === "vertex") {
+        return {
+          a: Number(slider1.value),
+          h: Number(slider2.value),
+          k: Number(slider3.value)
+        };
+      }
+
+      return {
+        a: Number(slider1.value),
+        x1: Number(slider2.value),
+        x2: Number(slider3.value)
+      };
+    }
+
+    function getY(x) {
+      const v = getQuadValues();
+
+      if (currentQuadMode === "standard") {
+        return v.a * x * x + v.b * x + v.c;
+      }
+
+      if (currentQuadMode === "vertex") {
+        return v.a * (x - v.h) * (x - v.h) + v.k;
+      }
+
+      return v.a * (x - v.x1) * (x - v.x2);
+    }
+
+    function updateQuadTextAndControls() {
+      if (currentQuadMode === "standard") {
+        const s = quadStates.standard;
+        slider1.min = "-5"; slider1.max = "5"; slider1.step = "0.1"; slider1.value = s.a;
+        slider2.min = "-10"; slider2.max = "10"; slider2.step = "0.1"; slider2.value = s.b;
+        slider3.min = "-10"; slider3.max = "10"; slider3.step = "0.1"; slider3.value = s.c;
+
+        slider1Name.textContent = "a";
+        slider2Name.textContent = "b";
+        slider3Name.textContent = "c";
+
+        result1Name.textContent = "x1";
+        result2Name.textContent = "x2";
+        result3Name.textContent = "x1 + x2";
+        result4Name.textContent = "x1 × x2";
+        vertexBBox.style.display = "none";
+        vertexCBox.style.display = "none";
+
+        quadTitle.textContent = "二次函数图像";
+        quadDesc.innerHTML = `拖动画布可以查看不同位置的平面直角坐标系。左侧滑块控制二次函数 <b>y = ax² + bx + c</b> 的三个系数。`;
+        quadTip.innerHTML = `
+          说明：<br>
+          1. 拖动右侧坐标系可以移动视野。<br>
+          2. 红色曲线是当前二次函数图像。<br>
+          3. 蓝色点是与 x 轴的交点。<br>
+          4. 当判别式小于 0 时，图像与 x 轴没有实数交点。
+        `;
+      } else if (currentQuadMode === "vertex") {
+        const s = quadStates.vertex;
+        slider1.min = "-5"; slider1.max = "5"; slider1.step = "0.1"; slider1.value = s.a;
+        slider2.min = "-10"; slider2.max = "10"; slider2.step = "0.1"; slider2.value = s.h;
+        slider3.min = "-10"; slider3.max = "10"; slider3.step = "0.1"; slider3.value = s.k;
+
+        slider1Name.textContent = "a";
+        slider2Name.textContent = "h";
+        slider3Name.textContent = "k";
+
+        result1Name.textContent = "x1";
+        result2Name.textContent = "x2";
+        result3Name.textContent = "x1 + x2";
+        result4Name.textContent = "x1 × x2";
+        vertexBBox.style.display = "";
+        vertexCBox.style.display = "";
+
+        quadTitle.textContent = "二次函数顶点式图像";
+        quadDesc.innerHTML = `拖动画布可以查看不同位置的平面直角坐标系。左侧滑块控制顶点式 <b>y = a(x - h)² + k</b> 的三个参数。`;
+        quadTip.innerHTML = `
+          说明：<br>
+          1. 拖动右侧坐标系可以移动视野。<br>
+          2. 红色曲线是当前二次函数图像。<br>
+          3. 蓝色点是与 x 轴的交点。<br>
+          4. 顶点是 <b>(h, k)</b>。<br>
+          5. 当 <b>-k/a &lt; 0</b> 时，图像与 x 轴没有实数交点。<br>
+          6. 展开后：<b>y = ax² + bx + c</b>，其中 <b>b = -2ah</b>，<b>c = ah² + k</b>。
+        `;
+      } else {
+        const s = quadStates.factored;
+        slider1.min = "-5"; slider1.max = "5"; slider1.step = "0.1"; slider1.value = s.a;
+        slider2.min = "-10"; slider2.max = "10"; slider2.step = "0.1"; slider2.value = s.x1;
+        slider3.min = "-10"; slider3.max = "10"; slider3.step = "0.1"; slider3.value = s.x2;
+
+        slider1Name.textContent = "a";
+        slider2Name.textContent = "x1";
+        slider3Name.textContent = "x2";
+
+        result1Name.textContent = "b";
+        result2Name.textContent = "c";
+        result3Name.textContent = "x1 + x2";
+        result4Name.textContent = "x1 × x2";
+        vertexBBox.style.display = "none";
+        vertexCBox.style.display = "none";
+
+        quadTitle.textContent = "二次函数交点式图像";
+        quadDesc.innerHTML = `拖动画布可以查看不同位置的平面直角坐标系。左侧滑块控制交点式 <b>y = a(x−x1)(x−x2)</b> 的三个参数。`;
+        quadTip.innerHTML = `
+          说明：<br>
+          1. 拖动右侧坐标系可以移动视野。<br>
+          2. 红色曲线是当前二次函数图像。<br>
+          3. 蓝色点是与 x 轴的两个交点。<br>
+          4. 展开后：<b>y = ax² + bx + c</b>。<br>
+          5. 因为 <b>y = a[x² − (x1+x2)x + x1x2]</b>，所以 <b>b = -a(x1+x2)</b>，<b>c = a·x1·x2</b>。
+        `;
+      }
+    }
+
+    function saveQuadState() {
+      if (currentQuadMode === "standard") {
+        quadStates.standard = {
+          a: Number(slider1.value),
+          b: Number(slider2.value),
+          c: Number(slider3.value)
+        };
+      } else if (currentQuadMode === "vertex") {
+        quadStates.vertex = {
+          a: Number(slider1.value),
+          h: Number(slider2.value),
+          k: Number(slider3.value)
+        };
+      } else {
+        quadStates.factored = {
+          a: Number(slider1.value),
+          x1: Number(slider2.value),
+          x2: Number(slider3.value)
+        };
+      }
+    }
+
+    function drawRootPoint(x) {
+      const sx = worldToScreenX(x);
+      const sy = worldToScreenY(0);
+
+      qctx.beginPath();
+      qctx.arc(sx, sy, 6, 0, Math.PI * 2);
+      qctx.fillStyle = "#2563eb";
+      qctx.fill();
+
+      qctx.strokeStyle = "#ffffff";
+      qctx.lineWidth = 2;
+      qctx.stroke();
+    }
+
+    function setNoRealRoots() {
+      x1Text.textContent = "无实数交点";
+      x2Text.textContent = "无实数交点";
+      sumText.textContent = "无实数值";
+      productText.textContent = "无实数值";
+    }
+
+    function updateRoots() {
+      const v = getQuadValues();
+
+      if (Math.abs(v.a) < 0.0000001) {
+        x1Text.textContent = "a不能为0";
+        x2Text.textContent = "a不能为0";
+        sumText.textContent = "不存在";
+        productText.textContent = "不存在";
+        return;
+      }
+
+      let x1;
+      let x2;
+
+      if (currentQuadMode === "standard") {
+        const d = v.b * v.b - 4 * v.a * v.c;
+        if (d < -0.0000001) {
+          setNoRealRoots();
+          return;
+        }
+
+        if (Math.abs(d) < 0.0000001) {
+          x1 = -v.b / (2 * v.a);
+          x2 = x1;
+        } else {
+          x1 = (-v.b - Math.sqrt(d)) / (2 * v.a);
+          x2 = (-v.b + Math.sqrt(d)) / (2 * v.a);
+        }
+
+        x1Text.textContent = formatNumber(x1);
+        x2Text.textContent = formatNumber(x2);
+        sumText.textContent = formatNumber(x1 + x2);
+        productText.textContent = formatNumber(x1 * x2);
+
+        drawRootPoint(x1);
+        drawRootPoint(x2);
+        return;
+      }
+
+      if (currentQuadMode === "vertex") {
+        const rootPart = -v.k / v.a;
+        if (rootPart < -0.0000001) {
+          setNoRealRoots();
+          return;
+        }
+
+        if (Math.abs(rootPart) < 0.0000001) {
+          x1 = v.h;
+          x2 = v.h;
+        } else {
+          const d = Math.sqrt(rootPart);
+          x1 = v.h - d;
+          x2 = v.h + d;
+        }
+
+        x1Text.textContent = formatNumber(x1);
+        x2Text.textContent = formatNumber(x2);
+        sumText.textContent = formatNumber(x1 + x2);
+        productText.textContent = formatNumber(x1 * x2);
+
+        drawRootPoint(x1);
+        drawRootPoint(x2);
+        return;
+      }
+
+      x1 = v.x1;
+      x2 = v.x2;
+      const b = -v.a * (x1 + x2);
+      const c = v.a * x1 * x2;
+
+      x1Text.textContent = formatNumber(b);
+      x2Text.textContent = formatNumber(c);
+      sumText.textContent = formatNumber(x1 + x2);
+      productText.textContent = formatNumber(x1 * x2);
+
+      drawRootPoint(x1);
+      drawRootPoint(x2);
+    }
+
+    function drawQuadratic() {
+      saveQuadState();
+
+      const v = getQuadValues();
+
+      slider1Value.textContent = formatCoeff(v.a);
+      if (currentQuadMode === "standard") {
+        slider2Value.textContent = formatCoeff(v.b);
+        slider3Value.textContent = formatCoeff(v.c);
+        formulaText.textContent = makeStandardFormula(v.a, v.b, v.c);
+      } else if (currentQuadMode === "vertex") {
+        slider2Value.textContent = formatCoeff(v.h);
+        slider3Value.textContent = formatCoeff(v.k);
+        formulaText.textContent = makeVertexFormula(v.a, v.h, v.k);
+
+        const vertexB = -2 * v.a * v.h;
+        const vertexC = v.a * v.h * v.h + v.k;
+        vertexBText.textContent = formatNumber(vertexB);
+        vertexCText.textContent = formatNumber(vertexC);
+      } else {
+        slider2Value.textContent = formatCoeff(v.x1);
+        slider3Value.textContent = formatCoeff(v.x2);
+        formulaText.textContent = makeFactoredFormula(v.a, v.x1, v.x2);
+      }
+
+      drawGrid();
+
+      if (Math.abs(v.a) < 0.0000001) {
+        x1Text.textContent = "a不能为0";
+        x2Text.textContent = "a不能为0";
+        sumText.textContent = "不存在";
+        productText.textContent = "不存在";
+        return;
+      }
+
+      qctx.beginPath();
+      let started = false;
+
+      for (let sx = 0; sx <= quadCanvas.width; sx += 2) {
+        const x = screenToWorldX(sx);
+        const y = getY(x);
+        const sy = worldToScreenY(y);
+
+        if (sy > -10000 && sy < 10000) {
+          if (!started) {
+            qctx.moveTo(sx, sy);
+            started = true;
+          } else {
+            qctx.lineTo(sx, sy);
+          }
+        } else {
+          started = false;
+        }
+      }
+
+      qctx.strokeStyle = "#dc2626";
+      qctx.lineWidth = 3;
+      qctx.stroke();
+
+      updateRoots();
+    }
+
+    function getCanvasPos(event) {
+      const rect = quadCanvas.getBoundingClientRect();
+
+      if (event.touches && event.touches.length > 0) {
+        return {
+          x: event.touches[0].clientX - rect.left,
+          y: event.touches[0].clientY - rect.top
+        };
+      }
+
+      return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
+      };
+    }
+
+    quadCanvas.addEventListener("mousedown", (event) => {
+      dragging = true;
+      const pos = getCanvasPos(event);
+      lastMouseX = pos.x;
+      lastMouseY = pos.y;
+    });
+
+    window.addEventListener("mousemove", (event) => {
+      if (!dragging) return;
+
+      const pos = getCanvasPos(event);
+      const dx = pos.x - lastMouseX;
+      const dy = pos.y - lastMouseY;
+
+      offsetX += dx;
+      offsetY += dy;
+
+      lastMouseX = pos.x;
+      lastMouseY = pos.y;
+
+      drawQuadratic();
+    });
+
+    window.addEventListener("mouseup", () => {
+      dragging = false;
+    });
+
+    quadCanvas.addEventListener("touchstart", (event) => {
+      dragging = true;
+      const pos = getCanvasPos(event);
+      lastMouseX = pos.x;
+      lastMouseY = pos.y;
+      event.preventDefault();
+    }, { passive: false });
+
+    quadCanvas.addEventListener("touchmove", (event) => {
+      if (!dragging) return;
+
+      const pos = getCanvasPos(event);
+      const dx = pos.x - lastMouseX;
+      const dy = pos.y - lastMouseY;
+
+      offsetX += dx;
+      offsetY += dy;
+
+      lastMouseX = pos.x;
+      lastMouseY = pos.y;
+
+      drawQuadratic();
+      event.preventDefault();
+    }, { passive: false });
+
+    quadCanvas.addEventListener("touchend", () => {
+      dragging = false;
+    });
+
+    slider1.addEventListener("input", drawQuadratic);
+    slider2.addEventListener("input", drawQuadratic);
+    slider3.addEventListener("input", drawQuadratic);
+
+    document.getElementById("resetViewBtn").addEventListener("click", () => {
+      offsetX = 0;
+      offsetY = 0;
+      drawQuadratic();
+    });
+
+    function switchPage(page) {
+      if (currentPage === "set2" || currentPage === "set3") {
+        savedExpr[currentSetMode] = input.value;
+      }
+      if (currentPage === "standard" || currentPage === "vertex" || currentPage === "factored") {
+        saveQuadState();
+      }
+
+      currentPage = page;
+
+      tabs.forEach(tab => {
+        tab.classList.toggle("active", tab.dataset.page === page);
+      });
+
+      if (page === "set2" || page === "set3") {
+        currentSetMode = page;
+        setSection.classList.remove("hidden");
+        quadSection.classList.add("hidden");
+
+        input.value = savedExpr[currentSetMode];
+        updateSetText();
+        updateExprShow();
+        tryRenderSet();
+      } else {
+        currentQuadMode = page;
+        setSection.classList.add("hidden");
+        quadSection.classList.remove("hidden");
+
+        updateQuadTextAndControls();
+        drawQuadratic();
+      }
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener("click", () => switchPage(tab.dataset.page));
+    });
+
+    updateSetText();
+    drawVenn(null);
+    updateExprShow();
+    setStatus("请输入或点击按钮构造集合表达式。", false);
+    updateQuadTextAndControls();
+    drawQuadratic();
+  </script>
+</body>
+</html>
